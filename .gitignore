@@ -1,0 +1,5 @@
+.*.swp
+.idea
+test_set.pkl
+train_set.pkl
+venv
