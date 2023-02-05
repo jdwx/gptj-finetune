@@ -1,9 +1,9 @@
 
 
+from lib import get_data_from_pickle
 from transformers import AutoConfig, AutoModelForCausalLM, Trainer, TrainingArguments
 
 
-import pickle
 import sys
 
 
@@ -90,7 +90,7 @@ training_args = TrainingArguments(
     # The number of epochs to train for.
     num_train_epochs=1,
 
-    # Since the default is to train for once epoch, there is no need
+    # Since the default is to train for one epoch, there is no need
     # to save intermediate models.
     save_strategy="no",
 
@@ -101,21 +101,10 @@ training_args = TrainingArguments(
     # save_total_limit=2,  # Each checkpoint is about 80 GiB on disk.
 
     # Be careful with this option, as it positively *explodes* DRAM usage
-    # for some reason.  It uses nearly 512 GiB of RAM and swap to
+    # for some reason.  It uses nearly 512 GiB of system RAM and swap to
     # load the final model using two 3090s.
     # load_best_model_at_end=True,
 )
-
-
-def get_data_from_pickle(file_path):
-    with open(file_path, "rb") as f:
-        try:
-            while True:
-                chunk = pickle.load(f)
-                chunk['labels'] = chunk['input_ids']
-                yield chunk
-        except EOFError:
-            pass
 
 
 def get_data(train_path: str, test_path: str):
@@ -125,7 +114,9 @@ def get_data(train_path: str, test_path: str):
 
 
 def get_model(model_name_or_path: str):
-    config = AutoConfig.from_pretrained(model_name_or_path, cache_dir=None, use_cache=False)
+    config = AutoConfig.from_pretrained(
+        model_name_or_path, cache_dir=None, use_cache=False
+    )
     # config.gradient_checkpointing = True
     # print("Config =", config)
 
@@ -137,11 +128,16 @@ def get_model(model_name_or_path: str):
     return model
 
 
-def main(source: str, dest: str) -> None:
-    train_set, test_set = get_data("train_set.pkl", "test_set.pkl")
+def train(source: str, dest: str) -> None:
+    train_set, test_set = get_data("train_chunks.pkl", "test_chunks.pkl")
     model = get_model(source)
     training_args.output_dir = dest
-    trainer = Trainer(model, train_dataset=train_set, eval_dataset=test_set, args=training_args)
+    trainer = Trainer(
+        model,
+        train_dataset=train_set,
+        eval_dataset=test_set,
+        args=training_args
+    )
     print("*** I AM TRAINING! ***")
     trainer.train()
     print("*** I AM SAVING! ***")
@@ -149,8 +145,7 @@ def main(source: str, dest: str) -> None:
     print("*** I AM DONE! ***")
 
 
-if __name__ == "__main__":
-
+def main() -> int:
     # W&B is a great tool and I recommend using the free tier to
     # visualize your training stats, particularly eval loss, as this
     # is a good way to see how much training is worthwhile and when
@@ -163,10 +158,16 @@ if __name__ == "__main__":
         if not arg.startswith("--local_rank="):
             args.append(arg)
     if len(args) == 0:
-        main("EleutherAI/gpt-j-6B", "out/")
+        train("EleutherAI/gpt-j-6B", "out/")
     elif len(args) == 1:
-        main("EleutherAI/gpt-j-6B", args[0])
+        train("EleutherAI/gpt-j-6B", args[0])
     elif len(args) == 2:
-        main(args[0], args[1])
+        train(args[0], args[1])
     else:
-        print("Usage: deepspeed", sys.argv[0], "[input_model] [output_model]")
+        print("Usage: deepspeed", sys.argv[0], "[[input_model] output_model]")
+        return 10
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
