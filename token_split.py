@@ -1,28 +1,25 @@
-import numpy as np
+# This program takes a list of one or more directories on the command line.
+# For each directory, it collects all the text files (those with .txt
+# extension) and tokenizes them. It then randomly splits the texts into
+# training and test sets.
+#
+# The output is two pickle files in the current directory:
+# train_texts.pkl - Training texts in random order
+# test_texts.pkl - Test texts in random order
+#
+# Each file contains a sequence of tokenized texts. Each tokenized text is
+# represented as a list of integers representing the text's token IDs.
+#
+# This program *does not* chunk the texts into fixed-size pieces.  To do that,
+# see the chunking.py program.  To use them for other purposes, see the
+# get_data_from_pickle() function in lib/pickler.py.
+
 import pickle
 import sys
 
 
 from transformers import AutoTokenizer
-from lib import LeftPadChunker, TextDataset
-
-
-class TextChunker:
-
-    def __init__(self, tokenizer):
-        self.tokenizer = tokenizer
-        self.input_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=tokenizer.eos_token_id)
-        self.attention_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=0)
-
-    def __call__(self, texts):
-        for text in texts:
-            input_chunks = self.input_chunker(text['input_ids'])
-            attention_chunks = self.attention_chunker(text['attention_mask'])
-            for input_chunk, attention_chunk in zip(input_chunks, attention_chunks):
-                yield {
-                    'input_ids': input_chunk,
-                    'attention_mask': attention_chunk,
-                }
+from lib import TextDataset
 
 
 def main(paths: list[str]) -> None:
@@ -34,23 +31,22 @@ def main(paths: list[str]) -> None:
     if len(dataset) == 0:
         print("I've got nothing here.")
         return
+
+    # The default split is 80% train, 20% test. If this is not suitable, you can
+    # change it here by passing train_split or test_split as floating point values
+    # between 0 and 1. (E.g., train_split=0.9 would give 90% train, 10% test.)
     train_texts, test_texts = dataset.split_train_and_test()
 
-    chunker = TextChunker(tokenizer)
-    train_set = list(chunker(train_texts))
-    test_set = list(chunker(test_texts))
+    with open("train_texts.pkl", "wb") as f:
+        for text in train_texts:
+            pickle.dump(text, f)
 
-    print("Chunked:", len(train_set), "training chunks", len(test_set), "test chunks")
-    print("Training chunk sizes:", np.unique([len(x['input_ids']) for x in train_set]))
-    print("Test chunk sizes:", np.unique([len(x['input_ids']) for x in test_set]))
+    with open("test_texts.pkl", "wb") as f:
+        for text in test_texts:
+            pickle.dump(text, f)
 
-    with open("train_set.pkl", "wb") as f:
-        for chunk in train_set:
-            pickle.dump(chunk, f)
-
-    with open("test_set.pkl", "wb") as f:
-        for chunk in test_set:
-            pickle.dump(chunk, f)
+    print("Processed:", len(train_texts), "training texts",
+          len(test_texts), "test texts")
 
 
 if __name__ == '__main__':

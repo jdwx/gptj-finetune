@@ -74,3 +74,20 @@ class DictChunker:
             for key in keys:
                 out[key] = work[key][ii]
             yield out
+
+
+class TextChunker:
+
+    def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
+        self.input_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=tokenizer.eos_token_id)
+        self.attention_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=0)
+
+    def __call__(self, text):
+        input_chunks = self.input_chunker(text['input_ids'])
+        attention_chunks = self.attention_chunker(text['attention_mask'])
+        for input_chunk, attention_chunk in zip(input_chunks, attention_chunks):
+            yield {
+                'input_ids': input_chunk,
+                'attention_mask': attention_chunk,
+            }

@@ -99,10 +99,11 @@ To use this:
 2. Create and activate a venv based on requirements.txt. (See make-venv.sh.)
 3. Tweak the parameters outlined above if you don't have 24 GiB of VRAM (per card).
 4. Run: `python token_split.py`
-5. Run: `deepspeed finetune.py`
-6. Wait a very long time.
-7. Run: `python infer_test.py` to test text generation using the fine-tuned model.
-8. Enjoy your fine-tuned model, which will be located in the out/ directory.
+5. Run: `python chunking.py`
+6. Run: `deepspeed finetune.py`
+7. Wait a very long time.
+8. Run: `python infer_test.py` to test text generation using the fine-tuned model.
+9. Enjoy your fine-tuned model, which will be located in the out/ directory.
 
 ## Credits
 

@@ -1,5 +1,8 @@
 .*.swp
 .idea
-test_set.pkl
-train_set.pkl
+test_chunks.pkl
+test_texts.pkl
+train_chunks.pkl
+train_texts.pkl
 venv
+wandb
