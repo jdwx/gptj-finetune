@@ -8,7 +8,9 @@
 # test_texts.pkl - Test texts in random order
 #
 # Each file contains a sequence of tokenized texts. Each tokenized text is
-# represented as a list of integers representing the text's token IDs.
+# represented as a dictionary with two keys:
+# input_ids - list of integers representing the text's token IDs
+# attention_mask - usually a list of all 1's
 #
 # This program *does not* chunk the texts into fixed-size pieces.  To do that,
 # see the chunking.py program.  To use them for other purposes, see the
