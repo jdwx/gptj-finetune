@@ -1,6 +1,6 @@
 
 
-from lib import get_data_from_pickle
+from lib import get_data_from_pickle_with_labels
 from transformers import AutoConfig, AutoModelForCausalLM, Trainer, TrainingArguments
 
 
@@ -108,8 +108,8 @@ training_args = TrainingArguments(
 
 
 def get_data(train_path: str, test_path: str):
-    train_set = list(get_data_from_pickle(train_path))
-    test_set = list(get_data_from_pickle(test_path))
+    train_set = list(get_data_from_pickle_with_labels(train_path))
+    test_set = list(get_data_from_pickle_with_labels(test_path))
     return train_set, test_set
 
 
