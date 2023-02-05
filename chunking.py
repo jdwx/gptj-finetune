@@ -1,11 +1,11 @@
-# This program takes pickle files containing train and test texts and
-# chunks them into 2048-token chunks. It then saves the chunks in new
-# pickle files. Each chunk pickle file contains a sequence of
-# chunks of text where each chunk is a list of token IDs. Texts are
-# left-padded to the tokenizer's max length with EOS tokens so files
-# do not overlap. Left padding is used since for language modelling it
-# is more likely to have a short input at the beginning rather than the
-# end.
+# This program takes pickle files containing train and test texts and chunks
+# them into 2048-token chunks. It then saves the chunks in new pickle files.
+# Each chunk pickle file contains a sequence of chunks of text where each
+# chunk is a dictionary list of token IDs and attention masks, as with the
+# input. Texts are left-padded to the tokenizer's max length with EOS tokens
+# so no chunk contains tokens from two texts. Left padding is used since for
+# causal language modelling it is more likely to have a short input at the
+# beginning rather than the end.
 
 import pickle
 import sys
