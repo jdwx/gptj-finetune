@@ -1,7 +1,8 @@
 
 
-from lib import get_data_from_pickle_with_labels
-from transformers import AutoConfig, AutoModelForCausalLM, Trainer, TrainingArguments
+from lib import get_data_sets
+from lib import get_model_huggingface as get_model
+from transformers import Trainer, TrainingArguments
 
 
 import sys
@@ -107,29 +108,8 @@ training_args = TrainingArguments(
 )
 
 
-def get_data(train_path: str, test_path: str):
-    train_set = list(get_data_from_pickle_with_labels(train_path))
-    test_set = list(get_data_from_pickle_with_labels(test_path))
-    return train_set, test_set
-
-
-def get_model(model_name_or_path: str):
-    config = AutoConfig.from_pretrained(
-        model_name_or_path, cache_dir=None, use_cache=False
-    )
-    # config.gradient_checkpointing = True
-    # print("Config =", config)
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name_or_path,
-        config=config,
-        cache_dir=None,
-    )
-    return model
-
-
 def train(source: str, dest: str) -> None:
-    train_set, test_set = get_data("train_chunks.pkl", "test_chunks.pkl")
+    train_set, test_set = get_data_sets("train_chunks.pkl", "test_chunks.pkl")
     model = get_model(source)
     training_args.output_dir = dest
     trainer = Trainer(
