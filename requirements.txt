@@ -1,13 +1,7 @@
 accelerate
-datasets
 deepspeed
-flask
 jsonlines
-nltk
 numpy
-requests
-scikit-learn
-sentence_transformers
 torch
 transformers
 wandb
