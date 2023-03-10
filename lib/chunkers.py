@@ -80,6 +80,9 @@ class TextChunker:
 
     def __init__(self, tokenizer):
         self.tokenizer = tokenizer
+        if tokenizer.model_max_length > 2048:
+            print(f"WARNING: tokenizer model max length {tokenizer.model_max_length} is greater than 2048. ")
+            self.tokenizer.model_max_length = 2048
         self.input_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=tokenizer.eos_token_id)
         self.attention_chunker = LeftPadChunker(tokenizer.model_max_length, pad_with=0)
 
